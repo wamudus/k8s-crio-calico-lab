@@ -36,5 +36,5 @@ chmod +x quick-start.sh
 - 2核4G 虚拟化环境下启动较慢（属正常现象）
 - 使用 iptables 而非 eBPF（为兼容旧内核）
 
-License
+## License
 MIT © 2026 [wamudus]
