@@ -37,4 +37,4 @@ chmod +x quick-start.sh
 - 使用 iptables 而非 eBPF（为兼容旧内核）
 
 ## License
-MIT © 2026 [wamudus]
+[MIT](LICENSE) © 2026 [wamudus]
