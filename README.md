@@ -3,7 +3,7 @@ Kubernetes 集群自动化部署（Ansible + Kubeadm + CRI-O + Calico）。
 ## 技术栈
 
 - **容器运行时**: CRI-O（Systemd 集成，Cgroup v2 原生支持）
-- **网络插件**: Calico v3.31（iptables 模式，兼容 RHEL 8/9 内核）
+- **网络插件**: Calico v3.31（iptables 模式，兼容 RHEL 8/9 内核,由 Tigera Operator v1.40.7 自动部署和管理）
 - **编排工具**: Kubeadm + Ansible（声明式基础设施）
 - **合规**: 通过 `ansible-lint` production profile 审查
 
