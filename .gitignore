@@ -20,3 +20,9 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local observability agents (systemd binaries exceed GitHub limit; use in-cluster solution instead)
+deploy/observability_agents/
+playbooks/Deploy_observability_agents.yml
+template/observability_agents/
+
