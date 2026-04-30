@@ -369,13 +369,13 @@ calicoNetwork:
 | **单 Master 拓扑** | 当前仅支持单控制平面节点，存在单点故障风险 | 引入 [kube-vip](https://kube-vip.io/) 或外部 LB + 多 Master 部署 |
 | **iptables 数据面** | 相比 eBPF，iptables 在大规模规则下性能存在瓶颈 | 待内核升级后，可切换至 `custom-resources-bpf.yaml` 启用 eBPF 数据面 |
 | **资源敏感** | 2C4G 虚拟化环境下组件启动较慢（CRI-O、Calico、Goldmane 等） | 属正常现象，生产环境建议 4C8G 以上 |
-| **裸告警缺失** | 本项目已覆盖节点级采集 Agent（Promtail + Node Exporter），但服务端（Loki / Prometheus）与告警规则需外部部署 | 可与我个人的 **[homelab-observability](https://github.com/wamudus/homelab-observability)** 项目衔接，补齐服务端与可视化层 |
+| **裸告警缺失** | 本项目已覆盖节点级采集 Agent（Promtail + Node Exporter），但服务端（Loki / Prometheus）与告警规则需外部部署 | 可与我个人的 **[homelab-observability](https://github.com/wamudus/node-observability-baseline)** 项目衔接，补齐服务端与可视化层 |
 
 ---
 
 ## 🔗 关联项目
 
-- **[homelab-observability](https://github.com/wamudus/homelab-observability)**：基于 Docker Compose 的 Prometheus + Loki + Grafana + Alertmanager + 钉钉告警可观测性基线。可作为本集群节点级监控与日志聚合的配套方案。
+- **[homelab-observability](https://github.com/wamudus/node-observability-baseline)**：基于 Docker Compose 的 Prometheus + Loki + Grafana + Alertmanager + 钉钉告警可观测性基线。可作为本集群节点级监控与日志聚合的配套方案。
 
 ---
 
