@@ -1,0 +1,104 @@
+---
+- name: "Deploy observability agents"
+  hosts: k8s_nodes 
+  vars:
+    extract_dir: /tmp/
+    target_bins:
+      - promtail-linux-amd64
+      - node_exporter
+  tasks:
+    - name: "Create /etc/promtail directory if it does not exist"
+      ansible.builtin.file:
+        path: /etc/promtail
+        state: directory
+        recurse: yes
+        owner: root
+        group: root
+
+    - name: "Download promtail-3.4.1"
+      ansible.builtin.get_url:
+        url: https://github.com/grafana/loki/releases/download/v3.4.1/promtail-linux-amd64.zip
+        dest: /tmp/promtail-linux-amd64.zip
+        mode: '0644'
+        checksum: sha256:https://github.com/grafana/loki/releases/download/v3.4.1/SHA256SUMS
+
+    - name: "Download node_exporter-V1.10.2"
+      ansible.builtin.get_url:
+        url: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
+        dest: /tmp/node_exporter-1.10.2.linux-amd64.tar.gz
+        mode: '0644'
+        checksum: sha256:https://github.com/prometheus/node_exporter/releases/download/v1.10.2/sha256sums.txt
+
+    - name: "Unarchive a promtail-linux-amd64.zip that is already on the remote machine"
+      ansible.builtin.unarchive:
+        src: '/tmp/{{ item }}'
+        dest: /tmp/
+        remote_src: yes
+      loop:
+        - promtail-linux-amd64.zip
+        - node_exporter-1.10.2.linux-amd64.tar.gz
+
+    - name: 在解压目录里动态查找目标二进制
+      ansible.builtin.find:
+        paths: "{{ extract_dir }}"
+        recurse: yes           # 递归搜子目录（比如 node_exporter/ 里面）
+        file_type: file
+        patterns: "{{ target_bins }}"   # 按文件名匹配，支持列表
+        age: 5m
+      register: found_bins
+
+    - name: 安装到 /usr/local/bin（只匹配到的文件）
+      ansible.builtin.copy:
+        src: "{{ item.path }}"
+        dest: "/usr/local/bin/{{ item.path | basename }}"
+        mode: '0755'
+        remote_src: yes
+      loop: "{{ found_bins.files }}"
+
+    - name: 验证是否找全了
+      ansible.builtin.fail:
+        msg: "没找到 {{ item }}，请检查压缩包内容"
+      loop: "{{ target_bins }}"
+      when: item not in (found_bins.files | map(attribute='path') | map('basename') | list)
+
+    - name: "Setting promtail.service.j2 -> /etc/systemd/system/promtail.service"
+      ansible.builtin.template:
+        src: "{{ playbook_dir | dirname }}/template/observability_agents/promtail/promtail.service.j2"
+        dest: /etc/systemd/system/promtail.service
+        mode: "0644"
+      notify: 
+        - Systemd daemon reload
+        - Reload promtail
+
+    - name: "Setting node-exoprter.service.j2 -> /etc/systemd/system/node-exporter.service"
+      ansible.builtin.template:
+        src: "{{ playbook_dir | dirname }}/template/observability_agents/node-exporter/node-exporter.service.j2"
+        dest: /etc/systemd/system/node-exporter.service
+        mode: "0644"
+      notify:
+        - Systemd daemon reload
+        - Reload node-exporter
+
+    - name: "Setting promtail-config.yaml.j2 -> /etc/systemd/system/promtail-config.yaml"
+      ansible.builtin.template:
+        src: "{{ playbook_dir | dirname }}/template/observability_agents/promtail/promtail-config.yaml.j2"
+        dest: /etc/promtail/promtail-config.yaml
+        mode: "0644"
+      notify:
+        - Reload promtail
+
+  handlers:
+    - name: "Systemd daemon reload"
+      ansible.builtin.shell: systemctl daemon-reload
+
+    - name: "Reload promtail"
+      ansible.builtin.systemd:
+        state: restarted
+        name: promtail
+        enabled: yes
+
+    - name: "Reload node-exporter"
+      ansible.builtin.systemd:
+        state: restarted
+        name: node-exporter
+        enabled: yes

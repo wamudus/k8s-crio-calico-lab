@@ -1,0 +1,13 @@
+[Unit]
+Description=Promtail
+Documentation=https://grafana.com/docs/loki/latest/send-data/promtail/
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/promtail-linux-amd64 -config.file=/etc/promtail/promtail-config.yaml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
